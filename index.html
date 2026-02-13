@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Growth Tracker</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+</head>
+
+<body>
+    <div id="app-container">
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div class="brand">
+                <i data-lucide="trending-up"></i>
+                <span>GrowthTracker</span>
+            </div>
+            <nav id="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button class="nav-item" data-view="inventory">
+                    <i data-lucide="package"></i> Inventory
+                </button>
+                <button class="nav-item" data-view="orders">
+                    <i data-lucide="shopping-cart"></i> Orders
+                </button>
+                <button class="nav-item" data-view="stock">
+                    <i data-lucide="box"></i> Stock
+                </button>
+                <button class="nav-item" data-view="reports">
+                    <i data-lucide="file-text"></i> Reports
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <header id="top-bar">
+                <h1 id="page-title">Dashboard</h1>
+                <div class="user-profile">
+                    <div class="avatar">VP</div>
+                </div>
+            </header>
+
+            <div id="content-area">
+                <!-- Inventory View -->
+                <section id="inventory-view">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2>Company Inventory</h2>
+                        <button class="btn btn-primary" id="btn-add-company-modal">
+                            <i data-lucide="plus"></i> New Company
+                        </button>
+                    </div>
+                    <div id="inventory-list">
+                        <!-- Company Cards will be rendered here -->
+                    </div>
+                </section>
+
+                <!-- Company Details View (New) -->
+                <section id="company-view" style="display: none;">
+                    <div style="margin-bottom: 2rem;">
+                        <button class="btn btn-outline btn-sm" id="btn-back-inventory">
+                            <i data-lucide="arrow-left"></i> Back to Inventory
+                        </button>
+                    </div>
+                    <div id="company-details-container">
+                        <!-- Dynamic Content -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Scripts -->
+    <script src="scripts/data.js"></script>
+    <script src="scripts/reports.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+
+</html>
