@@ -1,101 +1,1322 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Growth Tracker</title>
-
-    <!-- Google Fonts: Inter -->
+    <title>AttendFlow - Advanced Company Management & Payroll System</title>
+    <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- PDF Generation -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons CDN -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/css/icons.css">
+    <!-- App Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:,">
+    
+    <!-- External Dependencies for Exports (Loaded asynchronously) -->
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF (PDF) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/components.css">
+    <!-- jsPDF AutoTable Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
-
-<body>
-    <div id="app-container">
-        <!-- Sidebar -->
-        <aside id="sidebar">
-            <div class="brand">
-                <i data-lucide="trending-up"></i>
-                <span>GrowthTracker</span>
+<body class="light-theme">
+    <!-- Login Passcode Gate Overlay -->
+    <div class="lock-screen" id="lock-screen" style="display: none;">
+        <div class="lock-card">
+            <div class="lock-logo">
+                <div class="logo-icon"><i class="ph-bold ph-shield-check"></i></div>
+                <h2 id="lock-company-title">ABIRAMI INDUSTRIES</h2>
+                <p>Company ERP Portal Login</p>
             </div>
-            <nav id="sidebar-nav">
-                <button class="nav-item active" data-view="dashboard">
-                    <i data-lucide="layout-dashboard"></i> Dashboard
+            <form id="lock-form">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="lock-username">Admin Username</label>
+                    <input type="text" id="lock-username" placeholder="e.g. admin, hr, supervisor" autocomplete="username" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="lock-password">Password</label>
+                    <input type="password" id="lock-password" placeholder="••••••••" autocomplete="current-password" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+                    <p class="error-msg" id="lock-error-msg" style="display: none;">Invalid credentials! Please try again.</p>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="ph-bold ph-sign-in"></i> Authenticate
                 </button>
-                <button class="nav-item" data-view="inventory">
-                    <i data-lucide="package"></i> Inventory
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Mobile Menu Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        
+        <!-- Mobile Menu Toggle Button -->
+        <button class="menu-toggle-btn" id="menu-toggle-btn" title="Open menu" aria-label="Open menu">
+            <i class="ph ph-list"></i>
+        </button>
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="company-branding">
+                    <h2 id="sidebar-company-name">ABIRAMI INDUSTRIES</h2>
+                    <span class="brand-tagline">Company Management Dashboard</span>
+                </div>
+                <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Collapse Sidebar" aria-label="Collapse Sidebar">
+                    <i class="ph ph-caret-left"></i>
                 </button>
-                <button class="nav-item" data-view="orders">
-                    <i data-lucide="shopping-cart"></i> Orders
+            </div>
+            
+            <nav class="sidebar-menu">
+                <button class="menu-item active" data-target="dashboard-section">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
                 </button>
-                <button class="nav-item" data-view="stock">
-                    <i data-lucide="box"></i> Stock
+                <button class="menu-item" data-target="attendance-section">
+                    <i class="ph ph-calendar-check"></i>
+                    <span>Attendance</span>
                 </button>
-                <button class="nav-item" data-view="reports">
-                    <i data-lucide="file-text"></i> Reports
+                <button class="menu-item" data-target="employees-section">
+                    <i class="ph ph-users"></i>
+                    <span>Employees</span>
+                </button>
+                <button class="menu-item" data-target="payroll-section">
+                    <i class="ph ph-receipt"></i>
+                    <span>Payroll</span>
+                </button>
+                <button class="menu-item" data-target="reports-section">
+                    <i class="ph ph-chart-bar"></i>
+                    <span>Reports</span>
+                </button>
+                <button class="menu-item" data-target="settings-section">
+                    <i class="ph ph-gear"></i>
+                    <span>Settings</span>
                 </button>
             </nav>
+            
+            <div class="sidebar-footer">
+                <div class="footer-info">
+                    <p id="app-footer-title">ABIRAMI INDUSTRIES</p>
+                    <span class="version-tag">v2.0 Premium</span>
+                </div>
+                <button class="btn btn-secondary btn-small" id="sidebar-logout-btn" style="display: none;">
+                    <i class="ph ph-sign-out"></i> Logout
+                </button>
+            </div>
         </aside>
 
-        <!-- Main Content -->
-        <main id="main-content">
-            <header id="top-bar">
-                <h1 id="page-title">Dashboard</h1>
-                <div class="user-profile">
-                    <div class="avatar">VP</div>
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Top Dashboard Header -->
+            <header class="main-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 20px;">
+                    <div>
+                        <h2 id="section-title">Dashboard Overview</h2>
+                        <p class="subtitle" id="section-subtitle">Real-time indicators & company overview</p>
+                    </div>
+                    <div id="sync-status-badge" class="sync-badge offline">
+                        <i class="ph-bold ph-cloud-slash"></i> Offline (Local Mode)
+                    </div>
+                </div>
+                <div class="header-right">
+                    <!-- Week Range Picker (Mainly for Attendance & Payroll views, hidden on settings/dashboard unless relevant) -->
+                    <div class="week-picker-container" id="global-week-picker">
+                        <button class="btn-icon" id="prev-week-btn" title="Previous Week" aria-label="Previous Week">
+                            <i class="ph ph-caret-left"></i>
+                        </button>
+                        <div class="date-range-display" id="week-range-text">
+                            Loading Week...
+                        </div>
+                        <button class="btn-icon" id="next-week-btn" title="Next Week" aria-label="Next Week">
+                            <i class="ph ph-caret-right"></i>
+                        </button>
+                        <input type="week" id="week-selector-input" class="hidden-week-input">
+                        <button class="btn-icon" id="calendar-trigger-btn" title="Choose Week" aria-label="Choose Week">
+                            <i class="ph ph-calendar"></i>
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <div id="content-area">
-                <!-- Inventory View -->
-                <section id="inventory-view">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h2>Company Inventory</h2>
-                        <button class="btn btn-primary" id="btn-add-company-modal">
-                            <i data-lucide="plus"></i> New Company
-                        </button>
+            <!-- SECTION 1: Dashboard Overview Panel -->
+            <section id="dashboard-section" class="content-section active">
+                <!-- Stats Banners -->
+                <div class="stats-grid">
+                    <div class="stat-card total-payout">
+                        <div class="stat-icon"><i class="ph-bold ph-currency-inr"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Est. Payout (Week)</span>
+                            <span class="stat-value" id="stat-total-payout">₹0.00</span>
+                        </div>
                     </div>
-                    <div id="inventory-list">
-                        <!-- Company Cards will be rendered here -->
+                    <div class="stat-card count-present">
+                        <div class="stat-icon"><i class="ph-bold ph-user-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Present (Week)</span>
+                            <span class="stat-value" id="stat-present-count">0</span>
+                        </div>
                     </div>
-                </section>
+                    <div class="stat-card count-ot">
+                        <div class="stat-icon"><i class="ph-bold ph-plus-circle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">OT Days (Week)</span>
+                            <span class="stat-value" id="stat-ot-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card count-absent">
+                        <div class="stat-icon"><i class="ph-bold ph-user-minus"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Absent (Week)</span>
+                            <span class="stat-value" id="stat-absent-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card count-off">
+                        <div class="stat-icon"><i class="ph-bold ph-calendar-x"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Off Days (Week)</span>
+                            <span class="stat-value" id="stat-off-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card avg-attendance">
+                        <div class="stat-icon"><i class="ph-bold ph-chart-bar"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Avg Attendance</span>
+                            <span class="stat-value" id="stat-avg-attendance">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card active-employees">
+                        <div class="stat-icon"><i class="ph-bold ph-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Active Employees</span>
+                            <span class="stat-value" id="stat-active-employees">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card total-ot-hrs">
+                        <div class="stat-icon"><i class="ph-bold ph-clock"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total OT Hours</span>
+                            <span class="stat-value" id="stat-total-ot-hrs">0 hrs</span>
+                        </div>
+                    </div>
+                    <div class="stat-card late-markings">
+                        <div class="stat-icon"><i class="ph-bold ph-warning"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Late Markings</span>
+                            <span class="stat-value" id="stat-late-markings">0</span>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- Company Details View (New) -->
-                <section id="company-view" style="display: none;">
-                    <div style="margin-bottom: 2rem;">
-                        <button class="btn btn-outline btn-sm" id="btn-back-inventory">
-                            <i data-lucide="arrow-left"></i> Back to Inventory
+                <!-- Two Column Dashboard Layout (Analytics & Operations) -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-col-left">
+                        <!-- Quick Actions -->
+                        <div class="glass-card panel-card" style="margin-bottom: 24px;">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-lightning"></i> Quick Actions</h3>
+                            </div>
+                            <div class="quick-actions-grid">
+                                <button class="quick-action-btn" onclick="app.switchView('attendance-section', 'weekly-grid')">
+                                    <i class="ph-bold ph-calendar-check"></i>
+                                    <span>Mark Attendance</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="app.openAddEmployeeModal()">
+                                    <i class="ph-bold ph-user-plus"></i>
+                                    <span>Add Employee</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="app.switchView('payroll-section', 'payroll-calculator')">
+                                    <i class="ph-bold ph-calculator"></i>
+                                    <span>Calculate Salary</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="app.switchView('reports-section')">
+                                    <i class="ph-bold ph-file-text"></i>
+                                    <span>Generate Report</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Custom Canvas Graphs -->
+                        <div class="glass-card panel-card" style="margin-bottom: 24px;">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-chart-line-up"></i> Weekly Attendance & Salary Trends</h3>
+                                <div class="chart-legend">
+                                    <span class="legend-item"><span class="legend-dot present-dot"></span> Present %</span>
+                                    <span class="legend-item"><span class="legend-dot ot-dot"></span> OT Days</span>
+                                </div>
+                            </div>
+                            <div class="canvas-container">
+                                <canvas id="dashboard-analytics-chart" width="700" height="240"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-row-split">
+                            <!-- Announcements Section -->
+                            <div class="glass-card panel-card">
+                                <div class="card-header-bar">
+                                    <h3><i class="ph-bold ph-megaphone"></i> Announcements</h3>
+                                    <button class="btn btn-secondary btn-small" id="open-announcement-modal-btn">Post Note</button>
+                                </div>
+                                <div class="announcements-container" id="announcements-list">
+                                    <!-- Dynamic announcements -->
+                                    <div class="empty-list-notice">No company notices posted yet.</div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Action Shortcuts -->
+                            <div class="glass-card panel-card">
+                                <div class="card-header-bar">
+                                    <h3><i class="ph-bold ph-lightning"></i> Quick Action Desk</h3>
+                                </div>
+                                <div class="shortcuts-grid">
+                                    <button class="btn btn-secondary action-shortcut-btn" onclick="app.switchView('attendance-section', 'weekly-grid')">
+                                        <i class="ph ph-check-square"></i> Weekly Grid
+                                    </button>
+                                    <button class="btn btn-secondary action-shortcut-btn" onclick="app.openAddEmployeeModal()">
+                                        <i class="ph ph-user-plus"></i> Add Employee
+                                    </button>
+                                    <button class="btn btn-secondary action-shortcut-btn" onclick="app.switchView('payroll-section')">
+                                        <i class="ph ph-receipt"></i> Process Payroll
+                                    </button>
+                                    <button class="btn btn-secondary action-shortcut-btn" onclick="app.switchView('settings-section')">
+                                        <i class="ph ph-database"></i> Backup DB
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-col-right">
+                        <!-- Department Statistics -->
+                        <div class="glass-card panel-card" style="margin-bottom: 24px;">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-buildings"></i> Department Statistics</h3>
+                            </div>
+                            <div class="dept-stats-container" id="department-stats-container">
+                                <!-- Dynamic department stats -->
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity Widget -->
+                        <div class="glass-card panel-card" style="margin-bottom: 24px;">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-clock-counter-clockwise"></i> Recent Activity</h3>
+                            </div>
+                            <div class="recent-activity-widget" id="recent-activity-widget">
+                                <!-- Dynamic recent activity -->
+                            </div>
+                        </div>
+
+                        <!-- Notifications & Activity Logs -->
+                        <div class="glass-card panel-card flex-grow-1">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-list-numbers"></i> Audit & Activity Logs</h3>
+                                <button class="btn btn-secondary btn-small clear-logs-action" id="clear-logs-dashboard-btn">
+                                    <i class="ph-bold ph-trash"></i> Clear Logs
+                                </button>
+                            </div>
+                            <div class="logs-container" id="audit-logs-list">
+                                <!-- Dynamic audit entries -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Attendance Desk Panel (Multi-Sub-Tabs) -->
+            <section id="attendance-section" class="content-section">
+                <!-- Sub Tab Navigation -->
+                <div class="sub-tabs-bar">
+                    <button class="sub-tabactive" data-subtab="weekly-grid" id="subtab-weekly-grid">Weekly Attendance</button>
+                    <button data-subtab="monthly-log" id="subtab-monthly-log">Monthly Attendance</button>
+                    <button data-subtab="yearly-log" id="subtab-yearly-log">Yearly Attendance</button>
+                    <button data-subtab="holiday-calendar" id="subtab-holiday-calendar">Holidays & Leaves</button>
+                </div>
+
+                <!-- SUB-TAB 2B: Weekly Grid Table -->
+                <div id="subtab-content-weekly-grid" class="subtab-content active-subtab">
+                    <!-- Weekly Lock Alert Banner -->
+                    <div class="grid-status-alert" id="weekly-lock-status-bar" style="display: none;">
+                        <i class="ph-bold ph-lock"></i>
+                        <span>This week's attendance sheet has been locked after final submission. Edits require Super Admin approval.</span>
+                        <button class="btn btn-secondary btn-small" id="unlock-weekly-grid-btn" style="margin-left: auto; background: var(--bg-card); color: var(--danger); border-color: var(--danger);">
+                            <i class="ph-bold ph-lock-key-open"></i> Unlock Grid
                         </button>
                     </div>
-                    <div id="company-details-container">
-                        <!-- Dynamic Content -->
+
+                    <div class="toolbar-panel">
+                        <div class="toolbar-left">
+                            <div class="toggle-group" id="day-range-toggle">
+                                <button class="toggle-btn active" data-days="6" id="toggle-6-days">Mon - Sat</button>
+                                <button class="toggle-btn" data-days="7" id="toggle-7-days">Mon - Sun</button>
+                            </div>
+                            <div class="form-group-inline" style="margin-left: 16px;">
+                                <label for="weekly-shift-select" style="font-weight: 700;">Shift:</label>
+                                <select id="weekly-shift-select" class="form-input-inline">
+                                    <option value="General">General Shift</option>
+                                    <option value="Shift A">Shift A (Morning)</option>
+                                    <option value="Shift B">Shift B (Afternoon)</option>
+                                    <option value="Shift C">Shift C (Night)</option>
+                                    <option value="Night">Night Shift</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="toolbar-right" style="display: flex; gap: 8px;">
+                            <button class="btn btn-danger" id="lock-weekly-grid-btn">
+                                <i class="ph-bold ph-lock-key"></i> Lock Grid & Submit
+                            </button>
+                            <button class="btn btn-secondary btn-export" id="export-excel-btn">
+                                <i class="ph-bold ph-file-xls"></i> Export Excel
+                            </button>
+                            <button class="btn btn-primary btn-export" id="export-pdf-btn">
+                                <i class="ph-bold ph-file-pdf"></i> Export PDF
+                            </button>
+                        </div>
                     </div>
-                </section>
-            </div>
+
+                    <div class="table-container glass-card">
+                        <table class="attendance-table" id="attendance-table">
+                            <thead>
+                                <tr id="table-header-row">
+                                    <!-- Dynamic header columns -->
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body">
+                                <!-- Dynamic grid body rows -->
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="attendance-empty-state" style="display: none;">
+                            <i class="ph ph-users-three"></i>
+                            <h3>No Workers Added Yet</h3>
+                            <p>To begin tracking attendance, first add some employees to the directory.</p>
+                            <button class="btn btn-primary" onclick="app.switchView('employees-section')">
+                                Go to Workers Directory
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2C: Monthly Attendance Log -->
+                <div id="subtab-content-monthly-log" class="subtab-content">
+                    <div class="toolbar-panel">
+                        <div class="toolbar-left" style="display: flex; gap: 16px; align-items: center;">
+                            <div class="form-group-inline">
+                                <label for="monthly-log-employee" style="font-weight: 700;">Employee:</label>
+                                <select id="monthly-log-employee" class="form-input-inline"></select>
+                            </div>
+                            <div class="form-group-inline">
+                                <label for="monthly-log-month" style="font-weight: 700;">Month:</label>
+                                <input type="month" id="monthly-log-month" class="form-input-inline">
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-secondary" id="print-monthly-calendar-btn"><i class="ph-bold ph-printer"></i> Print Calendar</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid-container glass-card">
+                        <div class="monthly-calendar-header">
+                            <div class="calendar-header-day">Sun</div>
+                            <div class="calendar-header-day">Mon</div>
+                            <div class="calendar-header-day">Tue</div>
+                            <div class="calendar-header-day">Wed</div>
+                            <div class="calendar-header-day">Thu</div>
+                            <div class="calendar-header-day">Fri</div>
+                            <div class="calendar-header-day">Sat</div>
+                        </div>
+                        <div class="monthly-calendar-grid" id="monthly-calendar-days">
+                            <!-- Dynamic days rendering -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2C-2: Yearly Attendance Log -->
+                <div id="subtab-content-yearly-log" class="subtab-content">
+                    <div class="toolbar-panel">
+                        <div class="toolbar-left" style="display: flex; gap: 16px; align-items: center;">
+                            <div class="form-group-inline">
+                                <label for="yearly-log-employee" style="font-weight: 700;">Employee:</label>
+                                <select id="yearly-log-employee" class="form-input-inline"></select>
+                            </div>
+                            <div class="form-group-inline">
+                                <label for="yearly-log-year" style="font-weight: 700;">Year:</label>
+                                <input type="number" id="yearly-log-year" class="form-input-inline" min="2020" max="2100" style="width: 100px;">
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-secondary" id="print-yearly-report-btn"><i class="ph-bold ph-printer"></i> Print Yearly Log</button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards for selected Year -->
+                    <div class="dashboard-row" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon" style="background: var(--success-bg); color: var(--success);"><i class="ph ph-check-circle"></i></div>
+                            <div class="stat-info">
+                                <h4 id="yearly-stat-present">0</h4>
+                                <p>Present Days</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon" style="background: rgba(109,40,217,0.1); color: var(--status-present-ot);"><i class="ph ph-plus-circle"></i></div>
+                            <div class="stat-info">
+                                <h4 id="yearly-stat-ot">0</h4>
+                                <p>OT Sessions</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon" style="background: var(--danger-bg); color: var(--danger);"><i class="ph ph-x-circle"></i></div>
+                            <div class="stat-info">
+                                <h4 id="yearly-stat-absent">0</h4>
+                                <p>Absent Days</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon" style="background: var(--info-bg); color: var(--info);"><i class="ph ph-calendar"></i></div>
+                            <div class="stat-info">
+                                <h4 id="yearly-stat-leaves">0</h4>
+                                <p>On Leaves</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon" style="background: rgba(71,85,105,0.1); color: var(--status-off);"><i class="ph ph-calendar-x"></i></div>
+                            <div class="stat-info">
+                                <h4 id="yearly-stat-off">0</h4>
+                                <p>Off Days</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container glass-card">
+                        <table class="attendance-table" id="yearly-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Present Days</th>
+                                    <th>Overtime Sessions</th>
+                                    <th>Absent Days</th>
+                                    <th>On Leave</th>
+                                    <th>Off Days</th>
+                                    <th>Est. Payout</th>
+                                </tr>
+                            </thead>
+                            <tbody id="yearly-summary-table-body">
+                                <!-- Dynamic month-by-month stats -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2D: Holiday Schedule and Leaves -->
+                <div id="subtab-content-holiday-calendar" class="subtab-content">
+                    <div class="dashboard-row-split">
+                        <!-- Holidays Panel -->
+                        <div class="glass-card panel-card">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-calendar-plus"></i> Company Holidays</h3>
+                                <button class="btn btn-primary btn-small" id="add-holiday-btn">Add Holiday</button>
+                            </div>
+                            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                                <table class="attendance-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Holiday Occasion</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="holidays-list-table-body">
+                                        <!-- Dynamic holidays rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Special Leaves marking -->
+                        <div class="glass-card panel-card">
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-notebook"></i> Apply Custom Holiday/Leave (Bulk)</h3>
+                            </div>
+                            <form id="bulk-special-leave-form">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="bulk-leave-date">Select Date</label>
+                                    <input type="date" id="bulk-leave-date" class="form-control" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="bulk-leave-status">Mark As</label>
+                                    <select id="bulk-leave-status" class="form-control" required>
+                                        <option value="Holiday">Company Holiday (Standard Payout)</option>
+                                        <option value="Off Day">Scheduled Off Day</option>
+                                        <option value="Absent">Bulk Absence</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="bulk-leave-remarks">Holiday Description / Note</label>
+                                    <input type="text" id="bulk-leave-remarks" class="form-control" placeholder="e.g. Diwali Festival, Monsoon Off">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    <i class="ph-bold ph-calendar-check"></i> Apply to All Employees
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Workers Directory Panel -->
+            <section id="employees-section" class="content-section">
+                <!-- Add Worker Action Bar -->
+                <div class="action-bar-panel">
+                    <div style="display: flex; gap: 12px; flex-grow: 1; max-width: 750px; flex-wrap: wrap;">
+                        <div class="search-box" style="flex-grow: 1; min-width: 200px;">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="employee-search" placeholder="Search by name, ID, department...">
+                        </div>
+                        <select id="employee-category-filter" class="form-input-inline" style="width: 140px;">
+                            <option value="All">All Categories</option>
+                            <option value="Permanent">Permanent</option>
+                            <option value="Temporary">Temporary</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                        <select id="employee-status-filter" class="form-input-inline" style="width: 140px;">
+                            <option value="Active">Active Roster</option>
+                            <option value="Archived">Archived List</option>
+                            <option value="All">Show All</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="open-add-employee-modal">
+                        <i class="ph-bold ph-user-plus"></i> Add New Employee
+                    </button>
+                </div>
+
+                <!-- Employees List Cards -->
+                <div class="employee-grid" id="employees-list-container">
+                    <!-- Dynamically generated list cards -->
+                </div>
+
+                <!-- Empty State for Employees -->
+                <div class="empty-state" id="employees-empty-state" style="display: none;">
+                    <i class="ph ph-users"></i>
+                    <h3>No Employees Found</h3>
+                    <p>Start by adding your first employee and customizing their daily rates.</p>
+                    <button class="btn btn-primary" id="empty-state-add-btn">
+                        Add First Employee
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Payroll Hub Panel -->
+            <section id="payroll-section" class="content-section">
+                <div class="sub-tabs-bar">
+                    <button class="sub-tabactive" data-subtab="payroll-calculator" id="subtab-payroll-calculator">Payroll Calculator</button>
+                    <button data-subtab="payroll-history" id="subtab-payroll-history">Vouchers Ledger History</button>
+                </div>
+
+                <!-- SUB-TAB 4A: Payout Calculator -->
+                <div id="subtab-content-payroll-calculator" class="subtab-content active-subtab">
+                    <div class="toolbar-panel" style="margin-bottom: 20px;">
+                        <div class="toolbar-left" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <div class="toggle-group" id="payroll-period-toggle">
+                                <button class="toggle-btn active" data-period="weekly" id="toggle-payroll-weekly">Weekly Salary</button>
+                                <button class="toggle-btn" data-period="monthly" id="toggle-payroll-monthly">Monthly Salary</button>
+                            </div>
+                            <label for="payroll-employee-select" style="font-weight: 700;">Employee:</label>
+                            <select id="payroll-employee-select" class="form-input-inline" style="min-width: 200px;"></select>
+                            <div id="payroll-month-picker" style="display: none;">
+                                <label for="payroll-month-select" style="font-weight: 700;">Month:</label>
+                                <input type="month" id="payroll-month-select" class="form-input-inline">
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-secondary" id="payroll-preview-btn"><i class="ph-bold ph-eye"></i> Recalculate Breakdown</button>
+                            <button class="btn btn-primary" id="payroll-commit-btn"><i class="ph-bold ph-check-square"></i> Approve & Save Payout</button>
+                        </div>
+                    </div>
+
+                    <div class="payroll-split-container">
+                        <!-- Interactive Salary Breakdown Panel -->
+                        <div class="glass-card panel-card payroll-calc-card">
+                            <div class="card-header-bar">
+                                <h3>Salary Ledger & Adjustments</h3>
+                            </div>
+                            <form id="payroll-calculator-form">
+                                <div class="calculator-row">
+                                    <div class="form-group">
+                                        <label>Base Days Worked (Present)</label>
+                                        <input type="number" id="calc-days-present" readonly class="form-control bg-disabled">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Base Earnings (₹)</label>
+                                        <input type="number" id="calc-payout-base" readonly class="form-control bg-disabled">
+                                    </div>
+                                </div>
+                                <div class="calculator-row">
+                                    <div class="form-group">
+                                        <label>Overtime Days (OT)</label>
+                                        <input type="number" id="calc-days-ot" readonly class="form-control bg-disabled">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>OT Earnings (₹)</label>
+                                        <input type="number" id="calc-payout-ot" readonly class="form-control bg-disabled">
+                                    </div>
+                                </div>
+                                <div class="calculator-row">
+                                    <div class="form-group">
+                                        <label>Off Days Count</label>
+                                        <input type="number" id="calc-days-off" readonly class="form-control bg-disabled">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Off Days Pay (₹)</label>
+                                        <input type="number" id="calc-payout-off" readonly class="form-control bg-disabled">
+                                    </div>
+                                </div>
+
+                                <div class="rates-divider"><span>Incentives & Deductions</span></div>
+
+                                <div class="calculator-row">
+                                    <div class="form-group">
+                                        <label for="calc-incentive">Bonus / Incentives (₹)</label>
+                                        <input type="number" id="calc-incentive" min="0" value="0" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="calc-deduct-advance">Salary Advance Deductions (₹)</label>
+                                        <input type="number" id="calc-deduct-advance" min="0" value="0" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="calculator-row">
+                                    <div class="form-group">
+                                        <label for="calc-deduct-loan">Loan Installment (₹)</label>
+                                        <input type="number" id="calc-deduct-loan" min="0" value="0" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="calc-deduct-fine">Attendance Fines / Deductions (₹)</label>
+                                        <input type="number" id="calc-deduct-fine" min="0" value="0" class="form-control">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Slip Visual Preview Panel -->
+                        <div class="glass-card panel-card payroll-preview-card">
+                            <div class="card-header-bar">
+                                <h3>Pay Slip Preview</h3>
+                                <button class="btn btn-secondary btn-small" id="calc-download-pdf-btn"><i class="ph ph-download"></i> PDF</button>
+                            </div>
+                            <div class="payslip-render-box" id="payslip-preview-container">
+                                <!-- Payslip visual details -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 4B: Ledger History -->
+                <div id="subtab-content-payroll-history" class="subtab-content">
+                    <div class="table-container glass-card">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Worker Name</th>
+                                    <th>Period</th>
+                                    <th>Base Pay</th>
+                                    <th>Incentives</th>
+                                    <th>Deductions</th>
+                                    <th>Net Payout</th>
+                                    <th>Process Date</th>
+                                    <th>Payslip</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payroll-history-table-body">
+                                <!-- Dynamic saved payslips -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Reports & Analytics Panel -->
+            <section id="reports-section" class="content-section">
+                <div class="dashboard-row-split">
+                    <div class="glass-card panel-card">
+                        <div class="card-header-bar">
+                            <h3><i class="ph-bold ph-printer"></i> Custom Report & Bulk Slip Builder</h3>
+                        </div>
+                        <form id="reports-builder-form" style="padding: 10px 0;">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="report-period-type">Report Cycle</label>
+                                <select id="report-period-type" class="form-control">
+                                    <option value="weekly">Weekly Report</option>
+                                    <option value="monthly">Monthly Report</option>
+                                    <option value="yearly">Yearly Report</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;" id="report-week-group">
+                                <label for="report-week-select">Select Week</label>
+                                <input type="week" id="report-week-select" class="form-control">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px; display: none;" id="report-month-group">
+                                <label for="report-month-select">Select Month</label>
+                                <input type="month" id="report-month-select" class="form-control">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px; display: none;" id="report-year-group">
+                                <label for="report-year-select">Select Year</label>
+                                <input type="number" id="report-year-select" class="form-control" min="2020" max="2100" value="2026">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="report-department-select">Department Filter</label>
+                                <select id="report-department-select" class="form-control">
+                                    <option value="All">All Departments</option>
+                                    <option value="Production">Production</option>
+                                    <option value="Administration">Administration</option>
+                                    <option value="Quality Assurance">Quality Assurance</option>
+                                    <option value="Logistics">Logistics</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="report-category-select">Employee Category Filter</label>
+                                <select id="report-category-select" class="form-control">
+                                    <option value="All">All Categories</option>
+                                    <option value="Permanent">Permanent</option>
+                                    <option value="Temporary">Temporary</option>
+                                    <option value="Contract">Contract</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 24px;">
+                                <label for="report-search">Search Employee</label>
+                                <input type="text" id="report-search" class="form-control" placeholder="Search by name or ID...">
+                            </div>
+                            
+                            <div class="shortcuts-grid">
+                                <button type="button" class="btn btn-primary" id="btn-report-bulk-pdf">
+                                    <i class="ph-bold ph-file-pdf"></i> Compile Bulk slips PDF
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-report-excel">
+                                    <i class="ph-bold ph-file-xls"></i> Export Complete Excel
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-report-csv">
+                                    <i class="ph-bold ph-file-csv"></i> Download CSV
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-report-print" onclick="window.print()">
+                                    <i class="ph-bold ph-printer"></i> Direct Print View
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Metrics & Performance Summaries -->
+                    <div class="glass-card panel-card">
+                        <div class="card-header-bar">
+                            <h3><i class="ph-bold ph-activity"></i> Attendance & Cost Summaries</h3>
+                        </div>
+                        <div class="analytics-metrics-list">
+                            <div class="metric-row">
+                                <span class="metric-name">Average Attendance Percentage</span>
+                                <span class="metric-value" id="metric-avg-attendance">0%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Total Overtime Hours Logged</span>
+                                <span class="metric-value" id="metric-total-ot-hours">0 hrs</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Net Payroll Disbursed</span>
+                                <span class="metric-value" id="metric-total-disbursed">₹0.00</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Active Employees Count</span>
+                                <span class="metric-value" id="metric-active-employees">0</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Total Late Markings</span>
+                                <span class="metric-value" id="metric-total-late">0</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Total Absences</span>
+                                <span class="metric-value" id="metric-total-absent">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Report Table -->
+                <div class="glass-card panel-card" style="margin-top: 24px;">
+                    <div class="card-header-bar">
+                        <h3><i class="ph-bold ph-table"></i> Detailed Attendance & Salary Report</h3>
+                        <button class="btn btn-secondary btn-small" id="refresh-report-btn">
+                            <i class="ph-bold ph-arrows-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Category</th>
+                                    <th>Present Days</th>
+                                    <th>OT Days</th>
+                                    <th>Absent Days</th>
+                                    <th>Off Days</th>
+                                    <th>Late Markings</th>
+                                    <th>Base Pay (₹)</th>
+                                    <th>OT Pay (₹)</th>
+                                    <th>Deductions (₹)</th>
+                                    <th>Net Salary (₹)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-detailed-table-body">
+                                <!-- Dynamic report rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: System Settings Panel -->
+            <section id="settings-section" class="content-section">
+                <div class="dashboard-row-split">
+                    <!-- Company Profile Edit -->
+                    <div class="glass-card panel-card">
+                        <div class="card-header-bar">
+                            <h3><i class="ph-bold ph-buildings"></i> Company Branding Setup</h3>
+                        </div>
+                        <form id="settings-company-form" style="padding-top: 10px;">
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="settings-company-name">Company Name</label>
+                                <input type="text" id="settings-company-name" class="form-control" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="settings-company-address">Company Address</label>
+                                <input type="text" id="settings-company-address" class="form-control" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="settings-company-phone">Company Mobile / Contact</label>
+                                <input type="text" id="settings-company-phone" class="form-control" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="settings-company-logo">Upload Invoice/Payslip Logo</label>
+                                <div style="display: flex; gap: 16px; align-items: center;">
+                                    <input type="file" id="settings-company-logo" accept="image/*" class="form-control" style="padding: 6px;">
+                                    <img id="logo-preview-image" src="" alt="Logo Preview" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; display: none; border: 1px solid #cbd5e1;">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="ph-bold ph-floppy-disk"></i> Update Details
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Themes and Passcode settings -->
+                    <div class="glass-card panel-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="card-header-bar">
+                                <h3><i class="ph-bold ph-paint-brush"></i> UI Theme & Style Changer</h3>
+                            </div>
+                            <div class="settings-row" style="margin-bottom: 20px;">
+                                <div class="form-group-inline">
+                                    <label style="font-weight: 700; margin-right: 12px;">App Interface:</label>
+                                    <button class="btn btn-secondary btn-small active" id="btn-theme-light">Light Mode</button>
+                                    <button class="btn btn-secondary btn-small" id="btn-theme-dark">Dark Mode</button>
+                                </div>
+                            </div>
+                            <div class="settings-row" style="margin-bottom: 24px;">
+                                <label style="font-weight: 700; display: block; margin-bottom: 10px;">Primary Accents Theme:</label>
+                                <div class="theme-picker-grid">
+                                    <button class="theme-dot active" data-color="indigo" style="background-color: #2563eb;" title="Indigo Blue" aria-label="Use Indigo Blue theme"></button>
+                                    <button class="theme-dot" data-color="gold" style="background-color: #caa455;" title="Luxury Gold" aria-label="Use Luxury Gold theme"></button>
+                                    <button class="theme-dot" data-color="emerald" style="background-color: #16a34a;" title="Forest Emerald" aria-label="Use Forest Emerald theme"></button>
+                                    <button class="theme-dot" data-color="slate" style="background-color: #475569;" title="Slate Navy" aria-label="Use Slate Navy theme"></button>
+                                </div>
+                            </div>
+                            
+                            <div class="rates-divider"><span>Local Security Gate</span></div>
+
+                            <form id="settings-password-form">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <label for="settings-gate-toggle" style="font-weight: 700; cursor: pointer;">Enable Password Protection Lock</label>
+                                    <input type="checkbox" id="settings-gate-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="settings-admin-pass">New Lock Passcode</label>
+                                    <input type="password" id="settings-admin-pass" placeholder="Enter new pin/password" autocomplete="new-password" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                                    <i class="ph-bold ph-lock-key"></i> Save Passcode Settings
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Tools -->
+                <div class="glass-card panel-card" style="margin-top: 24px;">
+                    <div class="card-header-bar">
+                        <h3><i class="ph-bold ph-database"></i> Database Import, Export & Reset Tools</h3>
+                    </div>
+                    <div class="settings-tools-grid">
+                        <div class="tool-desc">
+                            <h4>Backup Database File</h4>
+                            <p>Download a local `.json` copy of all employee records, leaves, payroll history, and configuration logs.</p>
+                            <button class="btn btn-primary" id="btn-db-backup" style="margin-top: 10px;">
+                                <i class="ph-bold ph-download-simple"></i> Download Backup
+                            </button>
+                        </div>
+                        <div class="tool-desc">
+                            <h4>Restore Database File</h4>
+                            <p>Upload a previously exported `.json` database file to restore all attendance rosters instantly.</p>
+                            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                                <input type="file" id="btn-db-restore-file" accept=".json" class="form-control" style="padding: 6px;">
+                                <button class="btn btn-secondary" id="btn-db-restore-submit">
+                                    <i class="ph-bold ph-upload-simple"></i> Upload
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tool-desc" style="border-left: 2px solid #e2e8f0; padding-left: 24px;">
+                            <h4>Hard Reset System</h4>
+                            <p>Delete all employee registries, attendance history, payroll sheets, and settings completely.</p>
+                            <button class="btn btn-danger" id="btn-db-reset" style="margin-top: 10px;">
+                                <i class="ph-bold ph-warning-octagon"></i> Factory Reset DB
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin User Management -->
+                <div class="glass-card panel-card" style="margin-top: 24px;">
+                    <div class="card-header-bar">
+                        <h3><i class="ph-bold ph-users-three"></i> Admin User Management</h3>
+                        <button class="btn btn-primary btn-small" id="add-admin-btn">
+                            <i class="ph-bold ph-plus"></i> Add Admin
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table-body">
+                                <!-- Dynamic admin users -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Logs -->
+                <div class="glass-card panel-card" style="margin-top: 24px;">
+                    <div class="card-header-bar">
+                        <h3><i class="ph-bold ph-scroll"></i> Activity & Audit Logs</h3>
+                        <button class="btn btn-secondary btn-small clear-logs-action" id="clear-logs-settings-btn">
+                            <i class="ph-bold ph-trash"></i> Clear Logs
+                        </button>
+                    </div>
+                    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-logs-table-body">
+                                <!-- Dynamic activity logs -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Scripts -->
-    <!-- Scripts -->
-    <script src="scripts/data.js"></script>
-    <script src="scripts/reports.js"></script>
-    <script src="scripts/ui.js"></script>
-    <script src="scripts/app.js"></script>
-</body>
+    <!-- Modals Section -->
+    
+    <!-- 1. Add / Edit Employee Dialog Modal -->
+    <div class="modal-overlay" id="employee-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Employee</h3>
+                <button class="close-modal-btn" id="close-employee-modal" title="Close employee form" aria-label="Close employee form">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="employee-form">
+                <input type="hidden" id="edit-employee-id">
+                
+                <div class="employee-avatar-upload-box" style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px; background-color: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    <div style="position: relative;">
+                        <img id="employee-photo-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150" alt="Avatar Preview" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                        <input type="file" id="employee-photo-input" accept="image/*" style="display: none;">
+                        <button type="button" class="avatar-edit-icon-btn" onclick="document.getElementById('employee-photo-input').click()" title="Change employee photo" aria-label="Change employee photo" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;">
+                            <i class="ph ph-camera"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <span style="font-weight: 700; display: block; font-size: 13px;">Upload Employee Photo</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">Supports JPEG, PNG under 1MB.</span>
+                    </div>
+                </div>
 
+                <div class="form-group">
+                    <label for="employee-name">Employee Full Name</label>
+                    <input type="text" id="employee-name" required placeholder="Enter name (e.g. Sathya, Rajesh)">
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-mobile">Mobile Number</label>
+                        <input type="text" id="employee-mobile" placeholder="e.g. 9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-default-shift">Default Shift</label>
+                        <select id="employee-default-shift" class="form-control">
+                            <option value="General">General Shift</option>
+                            <option value="Shift A">Shift A (Morning)</option>
+                            <option value="Shift B">Shift B (Afternoon)</option>
+                            <option value="Shift C">Shift C (Night)</option>
+                            <option value="Night">Night Shift</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-department">Department</label>
+                        <select id="employee-department" class="form-control">
+                            <option value="Production">Production</option>
+                            <option value="Administration">Administration</option>
+                            <option value="Quality Assurance">Quality Assurance</option>
+                            <option value="Logistics">Logistics</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-designation">Designation</label>
+                        <input type="text" id="employee-designation" placeholder="e.g. Supervisor, Operator">
+                    </div>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-category">Worker Category</label>
+                        <select id="employee-category" class="form-control">
+                            <option value="Permanent">Permanent</option>
+                            <option value="Temporary">Temporary</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-joining-date">Joining Date</label>
+                        <input type="date" id="employee-joining-date">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-address">Residential Address</label>
+                    <input type="text" id="employee-address" placeholder="Enter residential address">
+                </div>
+
+                <div class="rates-divider">
+                    <span>Bank Details</span>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-bank-name">Bank Name</label>
+                        <input type="text" id="employee-bank-name" placeholder="e.g. State Bank of India">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-bank-acc">Account Number</label>
+                        <input type="text" id="employee-bank-acc" placeholder="Bank account number">
+                    </div>
+                </div>
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-bank-ifsc">IFSC Code</label>
+                        <input type="text" id="employee-bank-ifsc" placeholder="e.g. SBIN0001234">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-bank-branch">Branch Name</label>
+                        <input type="text" id="employee-bank-branch" placeholder="Bank branch location">
+                    </div>
+                </div>
+
+                <div class="rates-divider">
+                    <span>Emergency Contact</span>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-emergency-name">Emergency Contact Name</label>
+                        <input type="text" id="employee-emergency-name" placeholder="Contact person name">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-emergency-phone">Emergency Phone</label>
+                        <input type="text" id="employee-emergency-phone" placeholder="Contact phone number">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="employee-emergency-relation">Relationship</label>
+                    <input type="text" id="employee-emergency-relation" placeholder="e.g. Spouse, Parent, Sibling">
+                </div>
+
+                <div class="rates-divider">
+                    <span>ID Proof Documents</span>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="employee-aadhaar-upload">Aadhaar Card Upload</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="file" id="employee-aadhaar-upload" accept="image/*,.pdf" class="form-control" style="padding: 6px;">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="document.getElementById('employee-aadhaar-upload').click()">Upload</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-id-proof-upload">ID Proof Upload</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="file" id="employee-id-proof-upload" accept="image/*,.pdf" class="form-control" style="padding: 6px;">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="document.getElementById('employee-id-proof-upload').click()">Upload</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rates-divider">
+                    <span>Additional Information</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-remarks">Employee Remarks</label>
+                    <textarea id="employee-remarks" placeholder="Enter performance notes, special instructions, etc." class="form-control" style="height: 60px; padding: 10px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-notes">Internal Notes</label>
+                    <textarea id="employee-notes" placeholder="Enter additional employee details, notes, etc." class="form-control" style="height: 60px; padding: 10px;"></textarea>
+                </div>
+
+                <div class="rates-divider">
+                    <span>Wage Rates Configuration (₹)</span>
+                </div>
+
+                <div class="rates-grid">
+                    <div class="form-group">
+                        <label for="rate-present">Present Rate (Regular)</label>
+                        <div class="input-with-currency">
+                            <span class="currency-label">₹</span>
+                            <input type="number" id="rate-present" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rate-ot">Present + Overtime (OT)</label>
+                        <div class="input-with-currency">
+                            <span class="currency-label">₹</span>
+                            <input type="number" id="rate-ot" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rate-absent">Absent Rate</label>
+                        <div class="input-with-currency">
+                            <span class="currency-label">₹</span>
+                            <input type="number" id="rate-absent" min="0" value="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rate-off">Off Day Rate</label>
+                        <div class="input-with-currency">
+                            <span class="currency-label">₹</span>
+                            <input type="number" id="rate-off" min="0" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-employee-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-employee-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Post Announcement Modal -->
+    <div class="modal-overlay" id="announcement-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Post Announcement Note</h3>
+                <button class="close-modal-btn" onclick="document.getElementById('announcement-modal').classList.remove('active')" title="Close announcement form" aria-label="Close announcement form">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="announcement-form" style="padding: 24px 32px 32px 32px; display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                    <label for="announcement-title">Notice Subject</label>
+                    <input type="text" id="announcement-title" class="form-control" required placeholder="e.g. Diwali Holiday Notice">
+                </div>
+                <div class="form-group">
+                    <label for="announcement-body">Announcement Text</label>
+                    <textarea id="announcement-body" class="form-control" style="height: 100px; padding: 10px;" required placeholder="Write description..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('announcement-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Add/Edit Admin User Modal -->
+    <div class="modal-overlay" id="admin-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3 id="admin-modal-title">Add Admin User</h3>
+                <button class="close-modal-btn" onclick="document.getElementById('admin-modal').classList.remove('active')" title="Close admin form" aria-label="Close admin form">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="admin-form" style="padding: 24px 32px 32px 32px; display: flex; flex-direction: column; gap: 16px;">
+                <input type="hidden" id="edit-admin-username">
+                <div class="form-group">
+                    <label for="admin-username">Username</label>
+                    <input type="text" id="admin-username" class="form-control" required placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="admin-name">Full Name</label>
+                    <input type="text" id="admin-name" class="form-control" required placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                    <label for="admin-password">Password</label>
+                    <input type="password" id="admin-password" class="form-control" autocomplete="new-password" placeholder="Enter password (leave blank to keep current)">
+                </div>
+                <div class="form-group">
+                    <label for="admin-role">Role</label>
+                    <select id="admin-role" class="form-control">
+                        <option value="Admin">Admin</option>
+                        <option value="Super Admin">Super Admin</option>
+                        <option value="Viewer">Viewer</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('admin-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Widget -->
+    <div class="toast-notification" id="toast-widget" style="display: none;">
+        <i class="ph-bold ph-info" id="toast-icon"></i>
+        <span id="toast-message">Task saved successfully!</span>
+    </div>
+
+    <!-- Main JS Application Logic -->
+    <script src="cloud.config.js"></script>
+    <script src="app.js"></script>
+</body>
 </html>
